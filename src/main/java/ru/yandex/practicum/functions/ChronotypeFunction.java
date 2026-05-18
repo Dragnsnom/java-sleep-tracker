@@ -11,6 +11,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ChronotypeFunction implements SleepAnalysisFunction {
+    private final double AFTER_MIDNIGHT_THRESHOLD = 6.0;
+    private final double HOURS_IN_DAY = 24.0;
+    private final double OWL_BED_THRESHOLD = 23.0;
+    private final double OWL_WAKE_THRESHOLD = 9.0;
+    private final double LARK_BED_THRESHOLD = 22.0;
+    private final double LARK_WAKE_THRESHOLD = 7.0;
 
     @Override
     public SleepAnalysisResult apply(List<SleepingSession> sessions) {
@@ -33,7 +39,11 @@ public class ChronotypeFunction implements SleepAnalysisFunction {
                 .orElse(Chronotype.PIGEON);
 
         long maxCount = counts.get(result);
-        if (counts.values().stream().filter(c -> c == maxCount).count() > 1) {
+        long typesWithMaxCount = counts.values().stream()
+                .filter(count -> count == maxCount)
+                .count();
+
+        if (typesWithMaxCount > 1) {
             result = Chronotype.PIGEON;
         }
 
@@ -58,21 +68,23 @@ public class ChronotypeFunction implements SleepAnalysisFunction {
         double bedTime = bedHour + bedMinute / 60.0;
         double wakeTime = wakeHour + wakeMinute / 60.0;
 
-        // Если заснули после полуночи, но до 6 утра, добавляем 24 часа
-        if (bedTime < 6.0) {
-            bedTime += 24.0;
+        if (bedTime < AFTER_MIDNIGHT_THRESHOLD) {
+            bedTime += HOURS_IN_DAY;
         }
 
-        // Сова: bedTime > 23.0 AND wakeTime > 9.0
-        if (bedTime > 23.0 && wakeTime > 9.0) {
+        // Проверка на сову
+        boolean isOwl = bedTime > OWL_BED_THRESHOLD && wakeTime > OWL_WAKE_THRESHOLD;
+
+        // Проверка на жаворонка
+        boolean isLark = bedTime < LARK_BED_THRESHOLD && wakeTime < LARK_WAKE_THRESHOLD;
+
+        if (isOwl) {
             return Chronotype.OWL;
         }
-
-        // Жаворонок: bedTime < 22.0 AND wakeTime < 7.0
-        if (bedTime < 22.0 && wakeTime < 7.0) {
+        if (isLark) {
             return Chronotype.LARK;
         }
-
         return Chronotype.PIGEON;
     }
+
 }
