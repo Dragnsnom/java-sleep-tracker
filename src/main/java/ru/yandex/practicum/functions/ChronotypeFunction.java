@@ -11,12 +11,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ChronotypeFunction implements SleepAnalysisFunction {
-    private final double AFTER_MIDNIGHT_THRESHOLD = 6.0;
-    private final double HOURS_IN_DAY = 24.0;
-    private final double OWL_BED_THRESHOLD = 23.0;
-    private final double OWL_WAKE_THRESHOLD = 9.0;
-    private final double LARK_BED_THRESHOLD = 22.0;
-    private final double LARK_WAKE_THRESHOLD = 7.0;
+    private final double afterMidnightThreshold = 6.0;
+    private final double hoursInDay = 24.0;
+    private final double owlBedThreshold = 23.0;
+    private final double owlWakeThreshold = 9.0;
+    private final double larkBedThreshold = 22.0;
+    private final double larkWakeThreshold = 7.0;
 
     @Override
     public SleepAnalysisResult apply(List<SleepingSession> sessions) {
@@ -68,15 +68,15 @@ public class ChronotypeFunction implements SleepAnalysisFunction {
         double bedTime = bedHour + bedMinute / 60.0;
         double wakeTime = wakeHour + wakeMinute / 60.0;
 
-        if (bedTime < AFTER_MIDNIGHT_THRESHOLD) {
-            bedTime += HOURS_IN_DAY;
+        if (bedTime < afterMidnightThreshold) {
+            bedTime += hoursInDay;
         }
 
         // Проверка на сову
-        boolean isOwl = bedTime > OWL_BED_THRESHOLD && wakeTime > OWL_WAKE_THRESHOLD;
+        boolean isOwl = bedTime > owlBedThreshold && wakeTime > owlWakeThreshold;
 
         // Проверка на жаворонка
-        boolean isLark = bedTime < LARK_BED_THRESHOLD && wakeTime < LARK_WAKE_THRESHOLD;
+        boolean isLark = bedTime < larkBedThreshold && wakeTime < larkWakeThreshold;
 
         if (isOwl) {
             return Chronotype.OWL;
